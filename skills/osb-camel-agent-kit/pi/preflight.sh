@@ -43,12 +43,23 @@ if command -v mvn >/dev/null; then pass "maven $(mvn -v 2>/dev/null | head -1 | 
   [ -f "$HOME/.m2/settings.xml" ] && pass "~/.m2/settings.xml present (mirror/proxy)" || wrn "no ~/.m2/settings.xml: Maven will try Maven Central directly"
 else bad "maven not found"; fi
 if docker info >/dev/null 2>&1; then pass "docker"; elif podman info >/dev/null 2>&1; then pass "podman"
-else wrn "no Docker/Podman: gate G5 (Testcontainers Artemis) will be NOT RUN here; run it on the Jenkins agent"; fi
+else wrn "no Docker/Podman: gate G5 (Testcontainers Artemis) will be NOT RUN here; run level-2 tests where Docker is available"; fi
 
 echo "Kit layout (run from the migration repository root)"
 for p in AGENTS.md agents/analyst.md tools/verify_flow.sh pi/run_flow.sh; do [ -e "$p" ] && pass "$p" || bad "$p missing"; done
 sk=0; for d in .pi/skills "$HOME/.pi/agent/skills" .agents/skills; do [ -f "$d/osb-to-camel/SKILL.md" ] && sk=1; done
 [ $sk = 1 ] && pass "skill osb-to-camel discoverable" || bad "skill osb-to-camel not in .pi/skills, ~/.pi/agent/skills or .agents/skills"
+# pi skips a SKILL.md whose front matter is not valid YAML, without an error: check the usual traps
+for f in .pi/skills/*/SKILL.md "$HOME/.pi/agent/skills"/*/SKILL.md .agents/skills/*/SKILL.md; do
+  [ -f "$f" ] || continue
+  issue=$(awk 'NR==1 && $0!="---"{print "no front matter"; exit} NR>1 && $0=="---"{exit}
+               NR>1 && /^[A-Za-z_-]+: /{v=$0; sub(/^[A-Za-z_-]+: /,"",v);
+                 if (v ~ /^["\x27]/) next;
+                 if (index(v,": ")) {print "unquoted \": \" in " $1; exit}
+                 if (index(v," #")) {print "unquoted \" #\" in " $1; exit}
+                 if (length(v)>1024 && $1=="description:") {print "description over 1024 characters"; exit}}' "$f")
+  [ -z "$issue" ] && pass "front matter valid: $f" || bad "pi will skip $f: $issue"
+done
 [ -d osb-src ] && [ -n "$(ls -A osb-src 2>/dev/null)" ] && pass "osb-src/ has content" || wrn "osb-src/ empty: put the OSB export there"
 
 echo; echo "Result: $ok ok, $warn warnings, $fail failures"

@@ -6,7 +6,7 @@ mkdir -p "$(dirname ".pi/skills/osb-to-camel/SKILL.md")"
 cat > '.pi/skills/osb-to-camel/SKILL.md' <<'KIT_EOF__PI_SKILLS_OSB_TO_CAMEL_SKILL_MD'
 ---
 name: osb-to-camel
-description: Migrate Oracle Service Bus (OSB 11g/12c) flows to Apache Camel on Spring Boot, flow by flow, with a mocked JUnit test suite. Reads an OSB export (unzipped sbconfig.jar or JDeveloper OSB project: .proxy, .pipeline, .bix, .xqy, .xsl, .xsd, .wsdl), inventories and triages flows, writes a design card per flow, then generates the RouteBuilder, adapted XQuery/XSLT, configuration keys and tests (AdviceWith route tests, WireMock backends, Testcontainers Artemis, golden tests against the original transform, parity replay). Use whenever OSB, Oracle Service Bus, sbconfig, proxy or business services, pipelines, XQuery flows or "ESB to Camel" are mentioned, including inventory, triage or estimation questions, even without the word migrate.
+description: Migrate Oracle Service Bus (OSB 11g/12c) flows to Apache Camel on Spring Boot, flow by flow, with a mocked JUnit test suite. Reads an OSB export (unzipped sbconfig.jar or JDeveloper OSB project with .proxy, .pipeline, .bix, .xqy, .xsl, .xsd and .wsdl files), inventories and triages flows, writes a design card per flow, then generates the RouteBuilder, adapted XQuery/XSLT, configuration keys and tests (AdviceWith route tests, WireMock backends, Testcontainers Artemis, golden tests against the original transform, parity replay). Use whenever OSB, Oracle Service Bus, sbconfig, proxy or business services, pipelines, XQuery flows or "ESB to Camel" are mentioned, including inventory, triage or estimation questions, even without the word migrate.
 ---
 
 # OSB to Camel: migration factory for one flow or four hundred
