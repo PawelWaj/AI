@@ -420,6 +420,14 @@ for f in .pi/skills/*/SKILL.md "$HOME/.pi/agent/skills"/*/SKILL.md .agents/skill
                  if (length(v)>1024 && $1=="description:") {print "description over 1024 characters"; exit}}' "$f")
   [ -z "$issue" ] && pass "front matter valid: $f" || bad "pi will skip $f: $issue"
 done
+# /osb-* commands: pi reads prompt templates from .pi/prompts (project, after trust) or ~/.pi/agent/prompts
+pd=""; for d in .pi/prompts "$HOME/.pi/agent/prompts"; do
+  m=0; for n in osb-analyse osb-implement osb-test osb-verify osb-review; do [ -f "$d/$n.md" ] || m=$((m+1)); done
+  [ $m -eq 0 ] && { pd=$d; break; }
+done
+if [ -n "$pd" ]; then pass "/osb-* commands found in $pd"
+  [ "$pd" = .pi/prompts ] && printf '  [INFO] .pi/ loads only for a trusted project: trust it at the first pi start, or run pi --approve\n'
+else bad "/osb-* commands missing: run  mkdir -p .pi/prompts && cp pi/prompts/*.md .pi/prompts/  (pi/prompts is the kit copy, pi does not read it)"; fi
 [ -d osb-src ] && [ -n "$(ls -A osb-src 2>/dev/null)" ] && pass "osb-src/ has content" || wrn "osb-src/ empty: put the OSB export there"
 
 echo; echo "Result: $ok ok, $warn warnings, $fail failures"
@@ -428,3 +436,4 @@ KIT_EOF_PI_PREFLIGHT_SH
 mkdir -p .pi/prompts && cp pi/prompts/*.md .pi/prompts/
 chmod +x pi/*.sh 2>/dev/null || true
 echo "installed: 13 files (agent layer: AGENTS.md, role prompts, pi prompts, runner, preflight)"
+echo "commands /osb-* installed in .pi/prompts: start pi in this folder and trust the project (or pi --approve)"

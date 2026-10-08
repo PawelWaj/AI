@@ -56,7 +56,7 @@ Then `mkdir -p osb-src modules migration`.
 
 ```bash
 pi/preflight.sh                  # fix every FAIL; WARN on Docker is acceptable for the trial
-pi                               # trust the project when asked
+pi                               # trust the project when asked (or: pi --approve); type / to see the /osb-* commands
 ```
 
 The pi startup header must list `AGENTS.md`, skills `osb-to-camel` and `camel-migration-verification`, and prompts

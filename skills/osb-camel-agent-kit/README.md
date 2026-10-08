@@ -81,6 +81,6 @@ the skill's own eval cases.
 | `pi/preflight.sh` | read-only check of node/pi/java/maven/python/docker/kit layout on the VDI |
 | `pi/PI_SETUP.md` | install and run on the pi coding agent (interactive and agentic) |
 | `pi/run_flow.sh` | agentic mode on pi: one fresh `pi -p` process per role, lane checks, gates, fix loops |
-| `pi/prompts/*.md` | pi prompt templates `/osb-analyse`, `/osb-implement`, `/osb-test`, `/osb-verify`, `/osb-review` |
+| `pi/prompts/*.md` | pi prompt templates `/osb-analyse`, `/osb-implement`, `/osb-test`, `/osb-verify`, `/osb-review`. Kit copy only: pi reads them from `.pi/prompts/` (trusted project) or `~/.pi/agent/prompts/`; the bootstrap copies them, preflight checks |
 | `docs/OSB_Camel_Agent_Workflow.drawio` (+ PNG per page) | workflow diagram: page 1 agentic run on pi, page 2 inside the skills |
 | `TESTING.md` | the test levels L0–L7 after generation, including shadow run and cut-over |

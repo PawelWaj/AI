@@ -69,7 +69,7 @@ is in a non-standard place, set `"shellPath"` in `~/.pi/agent/settings.json` (do
 ```bash
 export CLIENT_LLM_API_KEY=...            # from the customer's secret store, never in a file in the repo
 export OSB_PI_MODEL="<model-id>"       # used by pi/run_flow.sh (not PI_MODEL: pi sets that itself)
-pi                                     # trust the project once, then /model should list <model-id>
+pi                                     # trust the project once (or pi --approve: .pi/prompts and .pi/skills load only when trusted), then /model should list <model-id>
 ```
 
 ## 4. Preflight
