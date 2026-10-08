@@ -65,8 +65,50 @@ class SignatureTests(unittest.TestCase):
 class TraceTests(unittest.TestCase):
     def test_weblogic_envelope(self):
         raw = "####<Oct 6> <Info> <OSB Pipeline> <h> <s> <t> <u> <> <x> <1791270902101> <[x] > <BEA-000000> < [st, p, null, REQUEST] hello world>"
-        msg, bea = trmod.osb_message(raw)
-        self.assertEqual((msg, bea), ("hello world", "BEA-000000"))
+        msg, meta = trmod.osb_message(raw)
+        self.assertEqual((msg, meta["bea"], meta["format"]), ("hello world", "BEA-000000", "weblogic"))
+
+    def test_odl_envelope(self):
+        raw = ("[2026-10-08T11:59:16.339+03:00] [osb_server1] [NOTIFICATION] [] [oracle.osb.logging.pipeline] "
+               "[tid: [ACTIVE].ExecuteThread: '97' for queue: 'x'] [userId: <anonymous>] [ecid: abc-1,0] [FlowId: F1]  "
+               "[node, request-1, stage-1, REQUEST] Request Received ::{\"a\":1}")
+        msg, meta = trmod.osb_message(raw)
+        self.assertEqual(msg, 'Request Received ::{"a":1}')
+        self.assertEqual((meta["format"], meta["level"], meta["ecid"], meta["flow_id"]), ("odl", "NOTIFICATION", "abc-1", "F1"))
+
+    def test_json_field_masking_keeps_json_valid(self):
+        m = trmod.Masker(trmod.DEFAULT_MASKS, trmod.DEFAULT_JSON_KEYS + ["branchNameArb"])
+        src = ('{"name":{"firstName":"Jane","surName":"Example","nameEnglish":"JANE EXAMPLE"},"nin":1000000001,'
+               '"birthDate":{"gregorian":"1999-05-17T00:00:00.000Z","hijiri":"1420-01-30"},"branchNameArb":"x y",'
+               '"amount":0.00,"keep":"visible"}')
+        out = m(src)
+        doc = json.loads(out)
+        self.assertNotIn("Jane", out)
+        self.assertNotIn("JANE EXAMPLE", out)
+        self.assertNotIn("1000000001", out)
+        self.assertNotIn("x y", out)
+        self.assertEqual(doc["birthDate"]["gregorian"], "1990-01-01T00:00:00.000Z")
+        self.assertEqual(len(str(doc["nin"])), 10)
+        self.assertEqual(doc["keep"], "visible")
+        self.assertIn('"amount":0.00', out)                      # untouched fields keep their exact text
+        self.assertEqual(m(src), out)                             # deterministic
+
+    def test_odl_sample_end_to_end(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            run(ROOT / "tools/osb_log_signatures.py", SAMPLES, "-o", d / "s.json")
+            run(ROOT / "tools/osb_log_traces.py", d / "s.json", SAMPLES / "osb-odl-sample.log", "-o", d / "t")
+            cov = json.loads((d / "t/coverage.json").read_text())
+            traces = [json.loads(line) for line in (d / "t/traces.jsonl").read_text().splitlines()]
+        self.assertEqual(cov["formats"], {"odl": 3})
+        self.assertEqual(cov["events_matched"], 3)
+        self.assertEqual(cov["traces"], 2)
+        body = [t for t in traces if t["outcome"] == "success"][0]["events"][0]["fields"]["body"]
+        self.assertNotIn("Jane", body)
+        self.assertNotIn("jane@example.org", body)
+        self.assertEqual(json.loads(body)["data"]["customer"]["birthDate"]["gregorian"][:10], "1990-01-01")
+        err = [t for t in traces if t["outcome"] == "error"][0]
+        self.assertEqual(err["fault_code"], "BEA-382000")
 
     def test_masking_is_deterministic_and_spares_uuids(self):
         m = trmod.Masker(trmod.DEFAULT_MASKS)

@@ -92,8 +92,8 @@ SPLUNK_TOKEN=... python3 tools/splunk_export.py --url https://<splunk>:8089 --se
 ```bash
 python3 tools/osb_log_traces.py work/signatures.json work/events.csv -o work/traces
 ```
-It reads the CSV (Splunk JSON export and raw WebLogic `.log` files work too) and:
-- **masks personal data:** ID numbers and e-mail addresses; the same value always gets the same mask;
+It reads the CSV (a Splunk JSON export and raw server logs work too, in either OSB format: classic WebLogic `####<…>` or the 12c **ODL** diagnostic log `[2026-…] [server] [NOTIFICATION] … [ecid: …]`) and:
+- **masks personal data:** long ID numbers, e-mail addresses, and the values of JSON fields with names, birth dates, identity and contact data. The same value always gets the same mask, and the payload stays valid JSON;
 - **groups the lines into one trace per message;**
 - **sorts the traces into scenarios:** success or error × header values × error code.
 
@@ -105,7 +105,8 @@ It reads the CSV (Splunk JSON export and raw WebLogic `.log` files work too) and
 
 Useful options:
 - `--dims hdr_resource,hdr_eventType` chooses which fields split the scenarios;
-- `--mask-regex '<pattern>'` adds more masking.
+- `--mask-regex '<pattern>'` adds more masking;
+- `--mask-json-key <field>` masks an extra JSON field (repeat for each client-specific field holding personal data, e.g. a name in Arabic). **Look at one masked payload before sharing fixtures.**
 
 ### Step 5. Produce the test cases → `tools/fixtures_from_traces.py`
 First edit **`replay-config.json`** for your flow (see section 5). Then:
@@ -230,6 +231,8 @@ osb-log-replay/
 | `traces_without_payload` is high | the body line is debug-level and off | enable debug for this proxy in a test environment (step 3) |
 | One message shows as many events | Splunk event breaking splits multi-line lines | ask the Splunk owner, or use the raw WebLogic log files as input to step 4 |
 | `events_unmatched` is high, matches low | the log line format differs from the pipeline expression | compare one `_raw` line with `signatures.json`; report the case |
+| `coverage.json` shows `"formats": {"unknown": …}` | the log format is neither WebLogic nor ODL | send one line (personal data removed) to extend the parser |
+| lines of one message are not grouped | the Log action does not write a trace id | ODL lines are grouped by their `ecid` automatically (`events_correlated_by_ecid`) |
 | Step 5 skips scenarios | those traces have no body | expected, see the line above |
 
 ## Status

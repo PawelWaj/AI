@@ -72,9 +72,12 @@ Before trusting a search:
 ## 3. Rebuild traces and scenarios
 
 `tools/osb_log_traces.py`:
-1. takes the OSB text out of the WebLogic envelope;
+1. takes the OSB text out of its envelope. Two formats: the classic WebLogic server log (`####<…> <BEA-000000> <…>`) and the
+   OSB 12c **ODL** diagnostic log (`[time] [server] [LEVEL] … [ecid: …] [FlowId: …]  [stage, pipeline, REQUEST] text`). From ODL
+   it also keeps the `ecid`, which ties all lines of one OSB request together, used when the text has no trace id;
 2. matches the signatures (the most specific match wins);
-3. **masks personal data deterministically**: the same input gives the same masked value, so masked keys still join
+3. **masks personal data deterministically**, including JSON fields with names, birth dates and identity numbers (add
+   client-specific fields with `--mask-json-key`): the same input gives the same masked value, so masked keys still join
    across lines;
 4. groups by correlation id and classifies each trace:
    - **outcome:** `error` if any error-pipeline line exists, else `success`;
