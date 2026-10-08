@@ -8,6 +8,7 @@ AI-assisted engineering assets: agent skills, role prompts and the deterministic
 |---|---|
 | [`skills/osb-camel-agent-kit/`](skills/osb-camel-agent-kit/) | Kit for migrating Oracle Service Bus (OSB 11g/12c) flows to Apache Camel on Spring Boot with an AI coding agent: two Agent Skills, role prompts, an agentic runner for the [pi](https://pi.dev) coding agent, and quality gates that run without AI |
 | [`skills/osb-camel-agent-kit.zip`](skills/osb-camel-agent-kit.zip) | The same kit as one archive |
+| [`osb-log-replay/`](osb-log-replay/) | Test cases from production OSB logs: log signatures from the pipeline source, Splunk searches, trace and scenario analysis with masking, fixtures, and an E2E replay harness on a mock broker (Artemis + WireMock) |
 | [`skills/README.md`](skills/README.md) | Overview of the skills folder and a quick install |
 
 ## OSB to Camel agent kit at a glance
