@@ -1,0 +1,30 @@
+# Test profile for a migrated OSB module. Every external endpoint points at a mock; the values are overridden per test
+# class (WireMock port, Artemis container URL) through @DynamicPropertySource.
+camel:
+  springboot:
+    name: osb-{{project}}-test
+    main-run-controller: true
+  component:
+    amqp:
+      # overridden by the ArtemisContainer in JmsPublishTest; left unresolvable on purpose so a test that forgets
+      # to override fails fast instead of connecting somewhere
+      connection-factory: "#amqpConnectionFactory"
+
+osb:
+  proxy:
+    {{ProxyName}}:
+      path: {{osb_uri}}
+  business:
+    # one block per business service on the card; mirrors the production keys so the same route code runs
+    {{BusinessName}}:
+      url: http://localhost:0/overridden-by-test
+      timeout: {{timeout_ms}}
+      retry-count: {{retry_count}}
+      retry-interval: {{retry_interval_ms}}
+      username: test-user
+      password: test-password
+
+logging:
+  level:
+    org.apache.camel: INFO
+    {{package}}: DEBUG
